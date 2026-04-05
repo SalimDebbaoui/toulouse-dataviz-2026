@@ -25,7 +25,7 @@ var STORY_NARRATIONS=[
    p:"",
    showRho:false},
   {h:"Pour le domaine Santé, les efforts sont-ils corrélés au bien-être\u00a0?",
-   p:"En Santé, La <strong>France</strong>, fait le plus d'effort en dépenses publiques pour se classer 8ème en bien être. L'Espagne se classe 9ème en effort et 3ème en bien être. Malgré ces cas extrêmes, il existe une corrélation positive modérée à élevée entre effort et bien être en Santé.",
+   p:"En Santé, La <strong>France</strong>, fait le plus d'effort en dépenses publiques pour se classer 7ème en bien être. L'Espagne se classe 9ème en effort et 2ème en bien être. Malgré ces cas extrêmes, il existe une corrélation positive modérée à élevée entre effort et bien être en Santé.",
    showRho:true, rhoComment:"Faible corrélation positive"},
   {h:"Et pour Savoirs &amp; compétences\u00a0?",
    p:"Une <strong>corrélation positive forte</strong> existe entre dépenses publiques et bien-être. La <strong>Finlande</strong>, 2e en effort, est <span class='hl-g'>1ère en bien-être</span>. La<strong> République Slovaque</strong> gagne également une place. L'<strong>Italie</strong>, l'<strong>Estonie</strong>, la Grèce garde le même rang.",
