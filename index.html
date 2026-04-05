@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Zone euro : comparer l'effort public au bien-être — Hackaviz 2026</title>
+<script src="d3.v7.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,800;9..144,900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head><body>
+
+<div id="loading"><div style="text-align:center"><div class="spinner"></div><p>Chargement des données…</p></div></div>
+
+<!-- Progress bar -->
+<div id="progressBar"></div>
+
+<!-- Section nav dots -->
+<nav id="sectionNav">
+  <a href="#heroNew" data-label="Radar" data-idx="0"></a>
+  <a href="#guidedInvite" data-label="Analyse guidée" data-idx="1"></a>
+  <a href="#sectionBar" data-label="€/hab vs % PIB" data-idx="2"></a>
+  <a href="#transDomains" data-label="9 domaines" data-idx="3"></a>
+  <a href="#transWellbeing" data-label="Bien-être" data-idx="4"></a>
+  <a href="#transCorrelation" data-label="Corrélation" data-idx="5"></a>
+  <a href="#sectionSlope" data-label="Effort vs Résultat" data-idx="6"></a>
+  <a href="#showcase" data-label="Profil pays" data-idx="7"></a>
+  <a href="#transCompositeCorr" data-label="Corrélation globale" data-idx="8"></a>
+  <a href="#slopeCompositeEffort" data-label="Effort vs Bien-être" data-idx="9"></a>
+  <a href="#insightsCompositeCorr" data-label="Insight corrélation" data-idx="10"></a>
+  <a href="#transHeatmap" data-label="Efficacité" data-idx="11"></a>
+  <a href="#heatmapGap" data-label="Écarts" data-idx="12"></a>
+  <a href="#insightsSection" data-label="Enseignements" data-idx="13"></a>
+  <a href="#transSubjectif" data-label="Objectif → Subjectif" data-idx="14"></a>
+  <a href="#slopeCompositeSat" data-label="Objectif vs Subjectif" data-idx="15"></a>
+  <a href="#conclusionGenerale" data-label="Conclusion générale" data-idx="16"></a>
+  <!-- <a href="#dashboard" data-label="Explorer" data-idx="17"></a> -->
+</nav>
+
+<!-- ═══════════ NOUVELLE HERO — Synthèse interactive ═══════════ -->
+<section class="snap-section hero-radar-section" id="heroNew">
+  <div class="hero-radar-content">
+    <h1 class="hero-radar-h1">Zone euro : comparer<br>l'<span style="color:#fb923c">effort public</span> au <span style="color:var(--green)">bien-être</span></h1>
+    <div class="scope"><span>14 pays · zone euro · 20 ans : 2004–2023 · 9 domaines · OCDE & Eurostat</span></div>
+    <p class="hero-radar-hint"><span class="hint-icon">👆</span> Cliquez sur un domaine pour explorer les dépenses et indicateurs associés.</p>
+  </div>
+
+  <!-- Onglets principaux : Profil pays / Vue générale -->
+  <div class="hero-top-tabs">
+    <button class="hero-tab active" data-hero-view="profil">📊 Profil pays</button>
+    <button class="hero-tab" data-hero-view="overview">🗺️ Vue générale</button>
+  </div>
+
+  <!-- Layout principal : sidebar gauche + contenu central -->
+  <div class="hero-main-layout">
+
+    <!-- SIDEBAR GAUCHE : sélecteur pays + cartes composite -->
+    <div class="hero-sidebar">
+      <div class="hero-sidebar-sel">
+        <label>Pays</label>
+        <select id="heroRadarSel" class="spider-country-select left"></select>
+      </div>
+      <div id="heroRadarLeftPanel">
+        <!-- Rempli dynamiquement par JS -->
+      </div>
+    </div>
+
+    <!-- PANNEAUX CENTRAUX -->
+    <div class="hero-view-panels">
+
+      <!-- VUE PROFIL PAYS (radar + slope) -->
+      <div class="hero-view-panel hero-view-profil active">
+        <div class="hero-radar-center">
+          <div id="heroRadarChart"></div>
+          <div class="spider-legend" style="margin-top:.3rem">
+            <span><span class="leg-line effort"></span> <span style="color:#fb923c">Effort public</span></span>
+            <span><span class="leg-line result"></span> <span style="color:#34d399">Bien-être</span></span>
+          </div>
+        </div>
+        <div class="hero-radar-slope-wrap">
+          <div class="hero-radar-slope-title">Rang composite <span class="composite-info-icon" title="Les indicateurs composites somment uniformément les 9 domaines. Le bien être composite est hautement corrélé positivement à la satisfaction à l'égard de la vie (ρ = 0,93 Spearman ; r = 0,88 Pearson).">ⓘ</span></div>
+          <svg id="heroSlopeChart" viewBox="0 0 230 380" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="hero-slope-legend">
+            <span><span class="dot" style="background:var(--green)"></span> Surperf.</span>
+            <span><span class="dot" style="background:var(--red)"></span> Sous-perf.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VUE GÉNÉRALE (heatmap écarts intégrée) -->
+      <div class="hero-view-panel hero-view-overview">
+        <div class="hero-overview-wrap">
+          <div class="hero-hg-view-toggle" id="heroHgViewToggle">
+            <button class="hg-vbtn active" data-hero-hg-view="gap">Écart (rang)</button>
+            <button class="hg-vbtn" data-hero-hg-view="zscore">Z-Score (valeur)</button>
+          </div>
+          <svg id="heroHeatmapChart"></svg>
+          <div class="heatmap-gap-legend" id="heroHgLegend">
+            <span class="hg-leg-label neg">Sous-performe</span>
+            <div class="hg-leg-bar"></div>
+            <span class="hg-leg-label pos">Surperforme</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="scroll-cue"><span>Défiler</span><div class="line"></div></div>
+</section>
+
+<!-- ═══════════ SECTION INVITATION ANALYSE GUIDÉE ═══════════ -->
+<section class="snap-section guided-invite-section" id="guidedInvite">
+  <div class="guided-invite-content">
+    <span class="guided-invite-icon">📊</span>
+    <p>Curieux d'en savoir plus sur les méthodes et choix derrière cette visualisation ? Cliquez pour une <strong>analyse guidée et détaillée</strong> sur l'étude de corrélation entre effort de dépenses publiques et bien-être.</p>
+    <button class="guided-expand-btn" id="guidedExpandBtn">
+      <span class="guided-expand-label">Cliquez pour développer</span>
+      <span class="guided-expand-arrow">▼</span>
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════ ANALYSE GUIDÉE (collapsible) ═══════════ -->
+<div class="guided-analysis" id="guidedAnalysis">
+
+<!-- ═══════════ ANALYSIS HERO (ancien hero) ═══════════ -->
+<section class="snap-section analysis-hero" id="analysisHero">
+  <div class="hero-content">
+    <h1>Zone euro : comparer<br>l'effort public au <em>bien-être</em></h1>
+    <div class="scope"><span>16 pays · zone euro · 2004–2023 · OCDE & Eurostat</span></div>
+    <p class="intro">Mathématiquement, <strong>1&nbsp;€ luxembourgeois&nbsp;=&nbsp;1&nbsp;€ lituanien&nbsp;=&nbsp;1&nbsp;€ français.</strong><br>Même monnaie, même taux de change, aucune conversion nécessaire.<br><strong>Mais économiquement, un euro ne pèse pas le même poids selon l'endroit où il est dépensé.</strong> Nous proposons de quantifier l'effort fait en matière de dépenses publiques pour 16 États membres de l'UE, entre 2004 et 2023.</p>
+  </div>
+  <div class="scroll-cue"><span>Défiler</span><div class="line"></div></div>
+</section>
+
+<!-- ═══════════ SECTION 1: BAR CHART (4 snap phases) ═══════════ -->
+<section class="section-bar" id="sectionBar">
+  <div class="bar-sticky">
+    <div class="bar-narration" id="barNarration">
+      <span class="step-tag">Mais économiquement, un euro ne pèse pas le même poids selon l'endroit où il est dépensé.</span>
+      <h2>Effort budgétaire en dépenses publiques.</h2>
+      <p>Budget public total par habitant, moyenne 2004–2023.</p>
+    </div>
+    <svg id="barChart" viewBox="0 0 820 560"></svg>
+  </div>
+  <!-- One snap trigger per phase -->
+  <div class="bar-phase snap-section" data-bar-phase="0"></div>
+  <div class="bar-phase snap-section" data-bar-phase="1"></div>
+  <div class="bar-phase snap-section" data-bar-phase="2"></div>
+  <div class="bar-phase snap-section" data-bar-phase="3"></div>
+</section>
+
+<!-- ═══════════ TRANSITION ═══════════ -->
+<section class="snap-section transition-section" id="transSection">
+  <div class="transition-content">
+    <span class="step-tag trans-el">Effort vs résultat</span>
+    <h2 class="trans-el">Limites de notre définition de l'<em>effort</em>.</h2>
+    <div class="trans-el" style="margin:1.5rem 0;padding:1rem 1.4rem;background:rgba(52,211,153,.06);border-left:3px solid var(--green);border-radius:0 8px 8px 0;">
+      <p style="margin:0;font-size:.95rem;"><strong>Le saviez-vous ?</strong> Le PIB irlandais 🍀 est artificiellement gonflé par l'effet dit <em>«Leprechaun Economics»</em>, lié à la présence de multinationales. Le PIB du Luxembourg 🏦 est dans une situation similaire.</p>
+    </div>
+    <p class="trans-el">Notre métrique n'est donc pas parfaite, mais elle reste exploitable. Dans la suite de l'étude, on exclura ces deux pays.</p>
+  </div>
+</section>
+
+<!-- ═══════════ TRANSITION 2a: L'EFFORT PAR DOMAINE ═══════════ -->
+<section class="snap-section transition-section transition-domains" id="transDomains">
+  <div class="transition-content">
+    <span class="step-tag dom-el">L'effort en détail</span>
+    <h2 class="dom-el">Nous définissons l'effort<br>sur <em>9&nbsp;domaines</em> de dépenses publiques.</h2>
+    <p class="dom-el">Chaque domaine regroupe des postes budgétaires issus de la classification <strong>COFOG</strong> (Eurostat).</p>
+    <div class="dom-el domain-cards" id="domainCards">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ TRANSITION 2b: DÉFINITION DU BIEN-ÊTRE ═══════════ -->
+<section class="snap-section transition-section transition-wellbeing" id="transWellbeing">
+  <div class="transition-content">
+    <span class="step-tag wb-el">Définir le bien-être</span>
+    <h2 class="wb-el">Maintenant que l'on a défini l'<em>effort</em>,<br>définissons le <em>bien-être</em>.</h2>
+    <p class="wb-el">Nous associons à chaque domaine de dépense des <strong>indicateurs de résultat</strong> issus du <strong>Better Life Index</strong> de l'OCDE. Cliquez sur un domaine pour voir la correspondance effort&nbsp;↔&nbsp;bien-être.</p>
+    <div class="wb-el matching-grid" id="matchingGrid">
+      <!-- Populated by JS -->
+    </div>
+    <div class="matching-detail-panel" id="matchingDetailPanel">
+      <!-- Populated on click by JS -->
+    </div>
+    <div class="wb-el wb-method-box">
+      <p>Nous agrégeons ces indicateurs en <strong>z-scores normalisés</strong>&nbsp;: un score de <strong class="zpos">+1</strong> signifie un écart-type au-dessus de la moyenne des 14&nbsp;pays (hors Irlande et Luxembourg), <strong class="zneg">−1</strong> un écart-type en dessous.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ TRANSITION 2c: MESURES DE LA CORRÉLATION ═══════════ -->
+<section class="snap-section transition-section transition-correlation" id="transCorrelation">
+  <div class="transition-content">
+    <span class="step-tag corr-el">Méthodologie</span>
+    <h2 class="corr-el">2 mesures de la corrélation&nbsp;:<br><em>rang</em> et <em>valeurs</em>.</h2>
+    <p class="corr-el">Pour mesurer la corrélation entre effort budgétaire et bien-être, nous utilisons deux coefficients complémentaires&nbsp;:</p>
+    <div class="corr-el corr-dual">
+      <div class="corr-col corr-col-left">
+        <div class="corr-col-header">
+          <span class="corr-symbol">ρ</span>
+          <span class="corr-name">Spearman</span>
+        </div>
+        <p class="corr-subtitle">Compare les <em>classements</em></p>
+        <p>Faire plus d'effort que les autres améliore-t-il mon rang&nbsp;? Les pays sont classés séparément selon leur dépense et selon leur bien-être, puis nous calculons à quel point ces deux classements se ressemblent.</p>
+        <p class="corr-result">Un ρ proche de <strong class="zpos">+1</strong> indique qu'augmenter la dépense est associé à un meilleur classement bien être.</p>
+      </div>
+      <div class="corr-divider"></div>
+      <div class="corr-col corr-col-right">
+        <div class="corr-col-header">
+          <span class="corr-symbol">r</span>
+          <span class="corr-name">Pearson</span>
+        </div>
+        <p class="corr-subtitle">Mesure la relation entre les <em>valeurs brutes</em></p>
+        <p>Faire plus d'effort améliore-t-il mes performances&nbsp;? Il quantifie la force de la relation linéaire entre le % du PIB consacré à un domaine et le z-score de bien-être correspondant.</p>
+        <p class="corr-result">Un r proche de <strong class="zpos">+1</strong> indique qu'augmenter la dépense est associé à de meilleures performances bien être.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SECTION 3: SLOPE STORY (6 snap phases) ═══════════ -->
+<section class="section-slope" id="sectionSlope">
+  <div class="slope-sticky">
+    <div class="slope-narration" id="slopeNarration">
+      <span class="step-tag">Étape 4 · Effort vs résultat</span>
+      <h2>Comparons maintenant les efforts avec le bien-être pour chaque domaine</h2>
+      <p></p>
+      <div class="slope-rho" id="slopeRho"></div>
+      <div class="slope-click-hint" id="slopeClickHint">Cliquez sur la France et comparez-la avec l'Espagne</div>
+    </div>
+    <div class="slope-view-toggle" id="slopeViewToggle">
+      <button class="slope-vbtn active" data-slope-view="spearman">
+        <span class="slope-vbtn-badge" id="slopeToggleBadgeRho"></span>
+        <span class="slope-vbtn-info">
+          <span class="slope-vbtn-label">ρ Spearman (rangs)</span>
+          <span class="slope-vbtn-desc" id="slopeToggleDescRho"></span>
+        </span>
+      </button>
+      <button class="slope-vbtn" data-slope-view="pearson">
+        <span class="slope-vbtn-badge" id="slopeToggleBadgeR"></span>
+        <span class="slope-vbtn-info">
+          <span class="slope-vbtn-label">r Pearson (valeurs)</span>
+          <span class="slope-vbtn-desc" id="slopeToggleDescR"></span>
+        </span>
+      </button>
+    </div>
+    <div class="slope-dual-wrap">
+      <div class="slope-panel slope-panel-spearman active">
+        <div class="slope-headers" id="slopeHeaders"><span>Rang effort (% du PIB)</span><span>Rang bien-être</span></div>
+        <svg id="slopeChart" viewBox="0 0 920 540" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <div class="slope-panel slope-panel-pearson">
+        <svg id="slopeScatter" viewBox="0 0 920 540" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+    </div>
+    <div class="slope-legend">
+      <span><span class="dot" style="background:var(--green)"></span> Surperformant</span>
+      <span><span class="dot" style="background:var(--red)"></span> Sous-performant</span>
+      <span><span class="dot" style="background:var(--dim)"></span> Neutre</span>
+    </div>
+  </div>
+  <!-- One snap trigger per slope phase (4 phases: intro + 3 domaines) -->
+  <div class="slope-phase snap-section" data-slope-phase="0"></div>
+  <div class="slope-phase snap-section" data-slope-phase="1"></div>
+  <div class="slope-phase snap-section" data-slope-phase="2"></div>
+  <div class="slope-phase snap-section" data-slope-phase="3"></div>
+</section>
+
+<!-- ═══════════ NARRATIVE SHOWCASE — Spider Chart Profil ═══════════ -->
+<section class="snap-section showcase" id="showcase">
+
+  <div class="showcase-bridge" id="showcaseBridge">
+    <span class="step-tag purple sc-el">Étape 6 · Profil pays</span>
+    <h2 class="sc-el">Chaque pays a son <em>profil</em>.</h2>
+    <p class="sc-el" style="margin-top:.6rem;color:var(--sub);font-size:.85rem;line-height:1.7;">
+      À partir des 9&nbsp;domaines étudiés, nous calculons un <strong style="color:var(--gold)">score composite</strong> (moyenne pondérée des z-scores) et un <strong style="color:var(--gold)">% de dépenses publiques du PIB composite</strong> (somme des 9&nbsp;postes budgétaires), qui nous permettent de <strong>classer chaque pays sur l'ensemble des 9&nbsp;catégories</strong>.</p>
+
+    <!-- Sélecteur de pays (un seul) -->
+    <div class="spider-selectors sc-el">
+      <div class="spider-sel-group">
+        <label>Pays</label>
+        <select id="spiderSelLeft" class="spider-country-select left"></select>
+      </div>
+    </div>
+
+    <!-- Spider Chart + Panneau composite côte à côte -->
+    <div class="spider-layout sc-el">
+      <div class="spider-chart-wrap">
+        <svg id="spiderChart" viewBox="0 0 540 500"></svg>
+      </div>
+      <div class="spider-composite-panel" id="spiderCompositePanel">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Légende (un seul pays) -->
+    <div class="spider-legend sc-el">
+      <span><span class="leg-line effort"></span> <span style="color:#fb923c">Effort public</span></span>
+      <span><span class="leg-line result"></span> <span style="color:#34d399">Bien-être</span></span>
+    </div>
+
+    <div class="bridge-arrow"><div class="line"></div></div>
+  </div>
+
+</section>
+
+<!-- ═══════════ TRANSITION: COMPOSITE CORRÉLATION ═══════════ -->
+<section class="snap-section transition-section transition-composite-corr" id="transCompositeCorr">
+  <div class="transition-content">
+    <span class="step-tag tcc-el">Effort global vs bien-être global</span>
+    <h2 class="tcc-el">Comparons maintenant le <em>%&nbsp;de dépenses publiques</em><br>avec les <em>indicateurs composites</em> calculés pour chaque pays.</h2>
+    <p class="tcc-el">Cela nous permettra de <strong>quantifier la corrélation</strong> entre l'effort en dépenses publiques et les indicateurs de bien-être, cette fois à l'échelle <strong>globale</strong> (les 9&nbsp;domaines agrégés).</p>
+  </div>
+</section>
+
+<!-- ═══════════ SLOPE COMPOSITE EFFORT vs BIEN-ÊTRE ═══════════ -->
+<section class="snap-section slope-composite-effort-section" id="slopeCompositeEffort">
+  <div class="sce-narration sce-el">
+    <span class="step-tag">Étape 6b · Corrélation globale</span>
+    <h2>% de dépenses publiques composite vs <em>indicateur de bien-être composite</em> <span class="composite-info-icon" title="L'indicateur composite somme uniformément les 9 domaines. Il est hautement corrélé positivement à la satisfaction à l'égard de la vie (ρ = 0,93 Spearman ; r = 0,88 Pearson).">ⓘ</span></h2>
+    <p>Les 9&nbsp;postes budgétaires agrégés face au score composite de bien-être. Chaque pays est classé sur les deux axes.</p>
+  </div>
+  <div class="sce-view-toggle sce-el" id="sceViewToggle">
+    <button class="sce-vbtn active" data-sce-view="spearman">
+      <span class="slope-vbtn-badge" id="sceToggleBadgeRho"></span>
+      <span class="slope-vbtn-info">
+        <span class="slope-vbtn-label">ρ Spearman (rangs)</span>
+        <span class="slope-vbtn-desc" id="sceToggleDescRho"></span>
+      </span>
+    </button>
+    <button class="sce-vbtn" data-sce-view="pearson">
+      <span class="slope-vbtn-badge" id="sceToggleBadgeR"></span>
+      <span class="slope-vbtn-info">
+        <span class="slope-vbtn-label">r Pearson (valeurs)</span>
+        <span class="slope-vbtn-desc" id="sceToggleDescR"></span>
+      </span>
+    </button>
+  </div>
+  <div class="sce-dual-wrap sce-el">
+    <div class="sce-panel sce-panel-spearman active">
+      <div class="sce-headers"><span>Rang effort (% du PIB composite)</span><span>Rang bien-être composite</span></div>
+      <svg id="sceSlopeChart" viewBox="0 0 920 540" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <div class="sce-panel sce-panel-pearson">
+      <svg id="sceScatterChart" viewBox="0 0 920 540" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </div>
+  <div class="slope-legend sce-legend sce-el">
+    <span><span class="dot" style="background:var(--green)"></span> Surperformant</span>
+    <span><span class="dot" style="background:var(--red)"></span> Sous-performant</span>
+    <span><span class="dot" style="background:var(--dim)"></span> Neutre</span>
+  </div>
+</section>
+
+<!-- ═══════════ INSIGHTS COMPOSITE CORRÉLATION ═══════════ -->
+<section class="snap-section insights-section insights-composite-corr-section" id="insightsCompositeCorr">
+  <div class="insights-wrap">
+    <span class="step-tag purple insc-el">Étape 6c · Insight</span>
+    <h2 class="insc-el">Ce que la corrélation globale nous <em>apprend</em>.</h2>
+
+    <div class="insc-el insc-coeff-cards">
+
+      <div class="insc-coeff-card">
+        <div class="insc-coeff-header">
+          <span class="insc-coeff-symbol">ρ</span>
+          <span class="insc-coeff-name">Spearman</span>
+        </div>
+        <div class="insc-coeff-value gold">0.34</div>
+        <p class="insc-coeff-interp">Corrélation <strong>positive faible</strong> entre les classements — les pays qui dépensent le plus ne sont pas systématiquement les mieux classés en bien-être.</p>
+      </div>
+
+      <div class="insc-coeff-divider"></div>
+
+      <div class="insc-coeff-card">
+        <div class="insc-coeff-header">
+          <span class="insc-coeff-symbol">r</span>
+          <span class="insc-coeff-name">Pearson</span>
+        </div>
+        <div class="insc-coeff-value gold">0.42</div>
+        <p class="insc-coeff-interp">Corrélation <strong>positive modérée</strong> entre les valeurs brutes — il y a un lien linéaire réel, mais loin d'être déterminant.</p>
+      </div>
+
+    </div>
+
+    <div class="insc-el insc-conclusion-box">
+      <p><strong>En conclusion</strong>, les deux coefficients convergent vers le même constat&nbsp;: il existe bien une <strong style="color:var(--green)">relation positive</strong> entre le niveau de dépenses publiques et le bien-être des populations, mais cette relation reste <strong style="color:var(--gold)">modeste</strong>.</p>
+      <p style="margin-top:.8rem">En d'autres termes, <strong>dépenser plus aide, mais ne suffit pas</strong>. La qualité de l'allocation, les structures institutionnelles, ou des facteurs culturels et géographiques jouent probablement un <strong>rôle déterminant</strong>.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════ TRANSITION: VERS LA HEATMAP ═══════════ -->
+<section class="snap-section transition-section transition-heatmap" id="transHeatmap">
+  <div class="transition-content">
+    <span class="step-tag thm-el">Mesurer l'efficacité</span>
+    <h2 class="thm-el">Allons plus loin&nbsp;:<br>mesurons l'<em>efficacité</em> de chaque pays.</h2>
+    <p class="thm-el">La corrélation globale nous donne une tendance d'ensemble. Mais elle masque les <strong>disparités entre pays</strong>.</p>
+    <div class="thm-el" style="margin:1.5rem 0;padding:1rem 1.4rem;background:rgba(167,139,250,.06);border-left:3px solid var(--purple);border-radius:0 8px 8px 0;">
+      <p style="margin:0;font-size:.95rem;line-height:1.7;color:var(--sub)"><strong style="color:var(--text)">Idée clé&nbsp;:</strong> pour chaque pays, nous calculons l'<strong>écart</strong> entre l'effort fourni (dépenses publiques) et le bien-être obtenu — en <strong style="color:var(--gold)">classement</strong> (rang effort − rang résultat) comme en <strong style="color:var(--green)">valeur quantifiée</strong> (z-score).</p>
+    </div>
+    <p class="thm-el">Un pays <strong>efficace</strong> obtient un bien-être supérieur à ce que son niveau de dépense laisserait prédire. Un pays <strong>inefficace</strong>, l'inverse. La heatmap qui suit permet de visualiser ces écarts d'un coup d'œil, domaine par domaine.</p>
+  </div>
+</section>
+
+<!-- ═══════════ HEATMAP ÉCARTS — Profil comparatif ═══════════ -->
+<section class="snap-section heatmap-gap-section" id="heatmapGap">
+  <div class="heatmap-gap-wrap">
+    <span class="step-tag purple hg-el">Étape 7 · Vue d'ensemble</span>
+    <h2 class="hg-el">Écart entre <em>effort</em> et <em>bien-être</em>,<br>une vue générale.</h2>
+    <p class="hg-el">Chaque cellule montre l'écart de rang (effort − bien-être). Un écart <strong class="hg-pos">positif</strong> signifie que le pays fait mieux que ce qu'il dépense. Un écart <strong class="hg-neg">négatif</strong>, l'inverse.</p>
+    <p class="hg-el hg-note" id="hgNote">La colonne <strong>Σ&nbsp;écart</strong> additionne les 9&nbsp;écarts domaine par domaine, tandis que le <strong>Composite</strong> compare les rangs globaux agrégés. Si ces deux valeurs divergent pour un pays, c'est que le tout n'est pas la somme des parties&nbsp;: des surperformances et sous-performances par domaine peuvent se compenser dans l'agrégat (voir le paradoxe de Simpson pour les plus curieux).</p>
+    <div class="hg-view-toggle hg-el" id="hgViewToggle">
+      <button class="hg-vbtn active" data-hg-view="gap">Écart (rang)</button>
+      <button class="hg-vbtn" data-hg-view="zscore">Z-Score (valeur)</button>
+    </div>
+    <svg id="heatmapGapChart" class="hg-el"></svg>
+    <div class="heatmap-gap-legend hg-el" id="hgLegend">
+      <span class="hg-leg-label neg">Sous-performe</span>
+      <div class="hg-leg-bar"></div>
+      <span class="hg-leg-label pos">Surperforme</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ INSIGHTS — Enseignements clés ═══════════ -->
+<section class="snap-section insights-section" id="insightsSection">
+  <div class="insights-wrap">
+    <span class="step-tag purple ins-el">Étape 7b · Enseignements</span>
+    <h2 class="ins-el">Ce que la heatmap nous <em>révèle</em>.</h2>
+    <p class="ins-el ins-intro">Trois profils emblématiques se dégagent du tableau.</p>
+
+    <div class="insights-cards ins-el">
+
+      <!-- 🇳🇱 Pays-Bas — Best performer -->
+      <div class="insight-card insight-green">
+        <div class="insight-flag">🇳🇱</div>
+        <div class="insight-body">
+          <h3>Pays-Bas — <span class="hl-green">le modèle</span></h3>
+          <p><strong>1<sup>ers</sup> sur les deux tableaux.</strong> Les Pays-Bas affichent le meilleur écart composite <em>et</em> le meilleur z-score composite. Leurs dépenses publiques sont à la hauteur de l'indicateur de bien-être calculé&nbsp;: <strong>l'effort est efficace</strong>.</p>
+          <div class="insight-chips">
+            <span class="insight-chip green"><span class="chip-label">Écart composite</span><span class="chip-value" id="insNlGap">—</span></span>
+            <span class="insight-chip green"><span class="chip-label">Rang Z-score</span><span class="chip-value" id="insNlZrank">—</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🇫🇷 France — Paradox -->
+      <div class="insight-card insight-gold">
+        <div class="insight-flag">🇫🇷</div>
+        <div class="insight-body">
+          <h3>France — <span class="hl-gold">le paradoxe</span></h3>
+          <p>Avant-dernière (<strong>13<sup>e</sup></strong>) en écart entre rang effort et rang bien-être composite. Pourtant, elle est <strong>6<sup>e</sup></strong> en valeur composite du z-score. Ses dépenses sont élevées par rapport à son classement&nbsp;: <strong>elle dépense beaucoup, mais le résultat reste honorable</strong> — un décalage typique entre effort consenti et rendement.</p>
+          <div class="insight-chips">
+            <span class="insight-chip gold"><span class="chip-label">Rang écart composite</span><span class="chip-value" id="insFrGapRank">—</span></span>
+            <span class="insight-chip gold"><span class="chip-label">Rang Z-score</span><span class="chip-value" id="insFrZrank">—</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🇬🇷 Grèce — Worst performer -->
+      <div class="insight-card insight-red">
+        <div class="insight-flag">🇬🇷</div>
+        <div class="insight-body">
+          <h3>Grèce — <span class="hl-red">la double peine</span></h3>
+          <p><strong>Dernière sur les deux tableaux.</strong> Pire écart composite <em>et</em> pire z-score de bien-être. L'effort budgétaire est faible et les résultats encore plus décevants&nbsp;: une situation où <strong>ni l'investissement ni le résultat ne sont au rendez-vous</strong>.</p>
+          <div class="insight-chips">
+            <span class="insight-chip red"><span class="chip-label">Écart composite</span><span class="chip-value" id="insGrGap">—</span></span>
+            <span class="insight-chip red"><span class="chip-label">Rang Z-score</span><span class="chip-value" id="insGrZrank">—</span></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ TRANSITION: OBJECTIF → SUBJECTIF ═══════════ -->
+<section class="snap-section transition-section transition-subjectif" id="transSubjectif">
+  <div class="transition-content">
+    <span class="step-tag tsub-el">Objectif vs subjectif</span>
+    <h2 class="tsub-el">Nous avons construit un indicateur <em>statistique</em><br>à partir de 9&nbsp;catégories de bien-être.</h2>
+    <p class="tsub-el">Cet indicateur composite agrège des données majoritairement <strong>objectives</strong>&nbsp;: espérance de vie, taux d'emploi, qualité de l'air, résultats scolaires…</p>
+    <div class="tsub-el" style="margin:1.5rem 0;padding:1rem 1.4rem;background:rgba(52,211,153,.06);border-left:3px solid var(--green);border-radius:0 8px 8px 0;">
+      <p style="margin:0;font-size:.95rem;line-height:1.7;color:var(--sub)"><strong style="color:var(--text)">Mais qu'en est-il du ressenti subjectif des citoyens&nbsp;?</strong><br>Un pays peut afficher d'excellents indicateurs sans que ses habitants se déclarent satisfaits — et inversement.</p>
+    </div>
+    <p class="tsub-el">Nous proposons de <strong>comparer</strong> notre indicateur composite avec la <strong style="color:var(--green)">«&nbsp;satisfaction à l'égard de la vie&nbsp;»</strong> (échelle 0–10, OCDE) et d'estimer la <strong>corrélation</strong> entre ces deux visions du bien-être.</p>
+  </div>
+</section>
+
+<!-- ═══════════ SLOPE COMPOSITE vs SATISFACTION ═══════════ -->
+<section class="snap-section slope-composite-sat-section" id="slopeCompositeSat">
+  <div class="sc-sat-narration sc-sat-el">
+    <span class="step-tag">Étape 8 · Objectif vs subjectif</span>
+    <h2>Indicateur composite <span class="composite-info-icon" title="L'indicateur composite somme uniformément les 9 domaines. Il est hautement corrélé positivement à la satisfaction à l'égard de la vie (ρ = 0,93 Spearman ; r = 0,88 Pearson).">ⓘ</span> vs <em>satisfaction déclarée</em></h2>
+    <p>Notre indicateur composite est très fortement corrélé positivement à la satisfaction à l'égard de la vie. C'est très rassurant ; les critères d'études de l'OCDE corroborent le bien être ressenti des citoyens. Remarquons que la France est le pays ayant le plus grand écart entre bien être composite et satisfaction déclarée.</p>
+  </div>
+  <div class="sc-slope-view-toggle sc-sat-el" id="scSlopeViewToggle">
+    <button class="sc-slope-vbtn active" data-sc-view="spearman">
+      <span class="slope-vbtn-badge" id="scToggleBadgeRho"></span>
+      <span class="slope-vbtn-info">
+        <span class="slope-vbtn-label">ρ Spearman (rangs)</span>
+        <span class="slope-vbtn-desc" id="scToggleDescRho"></span>
+      </span>
+    </button>
+    <button class="sc-slope-vbtn" data-sc-view="pearson">
+      <span class="slope-vbtn-badge" id="scToggleBadgeR"></span>
+      <span class="slope-vbtn-info">
+        <span class="slope-vbtn-label">r Pearson (valeurs)</span>
+        <span class="slope-vbtn-desc" id="scToggleDescR"></span>
+      </span>
+    </button>
+  </div>
+  <div class="sc-slope-dual-wrap sc-sat-el">
+    <div class="sc-slope-panel sc-slope-panel-spearman active">
+      <div class="sc-slope-headers"><span>Rang bien-être statistique (composite)</span><span>Rang satisfaction déclarée</span></div>
+      <svg id="scSlopeChart" viewBox="0 0 920 540" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <div class="sc-slope-panel sc-slope-panel-pearson">
+      <svg id="scScatterChart" viewBox="0 0 920 540" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </div>
+  <div class="slope-legend sc-sat-legend sc-sat-el">
+    <span><span class="dot" style="background:var(--green)"></span> Satisfaction &gt; composite</span>
+    <span><span class="dot" style="background:var(--red)"></span> Satisfaction &lt; composite</span>
+    <span><span class="dot" style="background:var(--dim)"></span> Neutre</span>
+  </div>
+</section>
+
+<!-- ═══════════ CONCLUSION GÉNÉRALE ═══════════ -->
+<section class="snap-section transition-section transition-conclusion-gen" id="conclusionGenerale">
+  <div class="transition-content" style="max-width:720px;">
+    <span class="step-tag cg-el">Conclusion générale</span>
+    <h2 class="cg-el">Les dépenses publiques ne font pas le bonheur,<br>mais y <em>contribuent</em>.</h2>
+
+    <div class="cg-el" style="text-align:left;margin-top:1.5rem;">
+
+      <p style="margin-bottom:1.2rem;">Cette étude confirme une intuition largement partagée. Les corrélations globales (<strong style="color:var(--gold)">ρ&nbsp;=&nbsp;0,34</strong>&nbsp;; <strong style="color:var(--gold)">r&nbsp;=&nbsp;0,42</strong>) indiquent un lien réel, mais modeste, entre dépense publique et bien-être.</p>
+
+      <div style="margin:1.4rem 0;padding:1rem 1.4rem;background:rgba(52,211,153,.06);border-left:3px solid var(--green);border-radius:0 8px 8px 0;">
+        <p style="margin:0;font-size:.95rem;line-height:1.7;color:var(--sub)"><strong style="color:var(--green)">Le volume n'explique tout.</strong> Les <strong style="color:var(--text)">Pays-Bas</strong> (9<sup>e</sup> en effort, 1<sup>er</sup> en résultat) et la <strong style="color:var(--text)">France</strong> (1<sup>re</sup> en effort, 6<sup>e</sup> en résultat) l'illustrent à eux deux&nbsp;: ce n'est pas seulement le <em>combien</em> qui compte.</p>
+      </div>
+
+      <div style="margin:1.4rem 0;padding:1rem 1.4rem;background:rgba(232,168,56,.06);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;">
+        <p style="margin:0;font-size:.95rem;line-height:1.7;color:var(--sub)"><strong style="color:var(--gold)">La vraie question reste ouverte.</strong> Les cas extrêmes mériteraient une analyse approfondie&nbsp;: les écarts reflètent-ils une meilleure <em>allocation budgétaire</em>, ou des <em>facteurs non considérés</em> (culture, géographie, cohésion sociale, ...&nbsp;) ?</p>
+      </div>
+
+      <div style="margin:1.4rem 0;padding:1rem 1.4rem;background:rgba(248,113,113,.06);border-left:3px solid var(--red);border-radius:0 8px 8px 0;">
+        <p style="margin:0;font-size:.95rem;line-height:1.7;color:var(--sub)"><strong style="color:var(--red)">Limite.</strong> Mesurer l'effort en % du PIB présente des biais, comme l'illustre l'exclusion de l'Irlande et du Luxembourg. Recourir à la <strong style="color:var(--text)">PPA</strong> (Parité de pouvoir d'achat) dans une suite permettrait une comparaison plus fidèle.</p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+</div><!-- END #guidedAnalysis (collapsible wrapper) -->
+
+<!-- ═══════════ SECTION 5: DASHBOARD (exploration libre) — MASQUÉ TEMPORAIREMENT ═══════════ -->
+<section class="snap-section dashboard-section" id="dashboard" style="display:none">
+  <div class="dashboard dashboard-inner">
+    <!-- ── SIDEBAR (catégories) ── -->
+    <div class="sidebar">
+      <h3>Économie</h3>
+      <button class="nav-item" data-dom="1">Revenu & patrimoine</button>
+      <button class="nav-item" data-dom="2">Travail & emploi</button>
+      <h3>Social</h3>
+      <button class="nav-item" data-dom="0">Santé</button>
+      <button class="nav-item" data-dom="3">Logement</button>
+      <button class="nav-item" data-dom="4">Savoirs & compétences</button>
+      <button class="nav-item" data-dom="5">Engagement civique</button>
+      <button class="nav-item" data-dom="6">Liens sociaux</button>
+      <button class="nav-item" data-dom="7">Sécurité</button>
+      <h3>Environnement</h3>
+      <button class="nav-item" data-dom="8">Qualité environnementale</button>
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,.05);margin:.6rem 0">
+      <h3>Satisfaction</h3>
+      <button class="nav-item" data-dom="-2">Satisfaction déclarée</button>
+      <button class="nav-item" data-dom="-3">Ind. Compos. VS Satisfaction</button>
+      <h3>Synthèse</h3>
+      <button class="nav-item active" data-dom="-1">Indicateur Composite</button>
+    </div>
+
+    <!-- ── CENTRE : slope / scatter ── -->
+    <div class="dash-main">
+      <div class="dash-main-header">
+        <h3 id="dashTitle" class="dash-title">Indicateur Composite</h3>
+        <div class="dash-view-toggle" id="dashViewToggle">
+          <button class="dash-vbtn active" data-dash-view="spearman">
+            <span class="slope-vbtn-badge" id="dashToggleBadgeRho"></span>
+            <span class="slope-vbtn-info">
+              <span class="slope-vbtn-label">ρ Spearman (rangs)</span>
+              <span class="slope-vbtn-desc" id="dashToggleDescRho"></span>
+            </span>
+          </button>
+          <button class="dash-vbtn" data-dash-view="pearson">
+            <span class="slope-vbtn-badge" id="dashToggleBadgeR"></span>
+            <span class="slope-vbtn-info">
+              <span class="slope-vbtn-label">r Pearson (valeurs)</span>
+              <span class="slope-vbtn-desc" id="dashToggleDescR"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+      <div class="dash-dual-wrap">
+        <div class="dash-panel dash-panel-spearman active">
+          <div class="dash-headers" id="chartHeaders"><span>Rang effort (% du PIB)</span><span>Rang bien-être composite</span></div>
+          <svg id="chart" viewBox="0 0 920 580" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        <div class="dash-panel dash-panel-pearson">
+          <svg id="scatterChart" viewBox="0 0 920 580" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+      </div>
+      <div class="slope-legend dash-legend">
+        <span><span class="dot" style="background:var(--green)"></span> Surperformant</span>
+        <span><span class="dot" style="background:var(--red)"></span> Sous-performant</span>
+        <span><span class="dot" style="background:var(--dim)"></span> Neutre</span>
+      </div>
+    </div>
+
+    <!-- ── PANNEAU DROIT ── -->
+    <div class="right-panel" id="rightPanel">
+      <h3 id="rpTitle">Indicateur Composite</h3>
+      <div id="rpCorr"></div>
+      <div id="rpEff" style="margin-top:.6rem"></div>
+      <div id="rpCards"></div>
+      <div id="rpMeasures"></div>
+      <div class="weight-section" id="weightSection">
+        <div class="rp-section-title">Pondération</div>
+        <div id="weightSliders"></div>
+        <button class="weight-reset" id="resetWeights">Réinitialiser</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="footer">Données : OCDE Better Life Index, Eurostat COFOG · 2004–2023 · Méthodologie : z-scores normalisés, corrélation de Spearman<br>Hackaviz 2026</div>
+
+<!-- ═══════════ OVERLAYS ═══════════ -->
+<div class="tooltip" id="tooltip"></div>
+<div class="popup-overlay" id="popupOverlay"><div class="popup" id="popup"></div></div>
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script src="js/config.js"></script>
+<script src="js/helpers.js"></script>
+<script src="js/tooltip.js"></script>
+<script src="js/hero.js"></script>
+<script src="js/barChart.js"></script>
+<script src="js/slopeStory.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/views.js"></script>
+<script src="js/popupModal.js"></script>
+<script src="js/domainCards.js"></script>
+<script src="js/showcase.js"></script>
+<script src="js/heatmapGap.js"></script>
+<script src="js/insights.js"></script>
+<script src="js/slopeComposite.js"></script>
+<script src="js/slopeCompositeEffort.js"></script>
+<script src="js/heroRadar.js"></script>
+<script src="js/main.js"></script>
+</body></html>
