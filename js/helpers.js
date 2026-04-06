@@ -27,15 +27,22 @@ function spearman(r,keyList){var kk=keyList||keysFiltered;var n=kk.length;if(n<3
   var sum=0;kk.forEach(function(k){var d=(r.s[k]||0)-(r.z[k]||0);sum+=d*d});
   return +(1-6*sum/(n*(n*n-1))).toFixed(2)}
 
-function corrLabel(rho){
+function corrLabel(rho,ctx){
   if(rho===null)return{cls:"none",txt:"Non calculable"};
   var a=Math.abs(rho);
   var sign=rho>=0?"positiv":"négativ";
-  if(a>=.8)return{cls:rho>0?"hi":"lo",txt:"Très fortement corrélé "+sign+"ement"};
-  if(a>=.6)return{cls:rho>0?"hi":"lo",txt:"Fortement corrélé "+sign+"ement"};
-  if(a>=.4)return{cls:rho>0?"hi":"lo",txt:"Modérément corrélé "+sign+"ement"};
-  if(a>=.2)return{cls:rho<0?"lo":"mid",txt:"Faiblement corrélé "+sign+"ement"};
-  return{cls:"none",txt:"Corrélation très faible / négligeable"}}
+  var prefix=ctx?ctx+' ':''
+  var base;
+  if(a>=.8) base="très fortement corrélés "+sign+"ement";
+  else if(a>=.6) base="fortement corrélés "+sign+"ement";
+  else if(a>=.4) base="modérément corrélés "+sign+"ement";
+  else if(a>=.2) base="faiblement corrélés "+sign+"ement";
+  else return{cls:"none",txt:prefix?prefix+"très faiblement corrélés":"Corrélation très faible / négligeable"};
+  var cls;
+  if(a>=.4) cls=rho>0?"hi":"lo";
+  else cls=rho<0?"lo":"mid";
+  var txt=prefix?prefix+base:base.charAt(0).toUpperCase()+base.slice(1);
+  return{cls:cls,txt:txt}}
 
 function synthPhrase(sR,zR){
   var d=sR-zR;

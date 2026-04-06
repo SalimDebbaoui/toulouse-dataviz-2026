@@ -65,15 +65,22 @@ function pearsonR(pts){
 }
 
 /* ── Pearson label helper ── */
-function pearsonLabel(r){
+function pearsonLabel(r,ctx){
   if(r===null)return{cls:'none',txt:'Non calculable'};
   var a=Math.abs(r);
   var sign=r>=0?'positiv':'négativ';
-  if(a>=.8)return{cls:r>0?'hi':'lo',txt:'Très fortement corrélé '+sign+'ement'};
-  if(a>=.6)return{cls:r>0?'hi':'lo',txt:'Fortement corrélé '+sign+'ement'};
-  if(a>=.4)return{cls:r>0?'hi':'lo',txt:'Modérément corrélé '+sign+'ement'};
-  if(a>=.2)return{cls:r<0?'lo':'mid',txt:'Faiblement corrélé '+sign+'ement'};
-  return{cls:'none',txt:'Corrélation très faible / négligeable'};
+  var prefix=ctx?ctx+' ':''
+  var base;
+  if(a>=.8) base='très fortement corrélés '+sign+'ement';
+  else if(a>=.6) base='fortement corrélés '+sign+'ement';
+  else if(a>=.4) base='modérément corrélés '+sign+'ement';
+  else if(a>=.2) base='faiblement corrélés '+sign+'ement';
+  else return{cls:'none',txt:prefix?prefix+'très faiblement corrélés':'Corrélation très faible / négligeable'};
+  var cls;
+  if(a>=.4) cls=r>0?'hi':'lo';
+  else cls=r<0?'lo':'mid';
+  var txt=prefix?prefix+base:base.charAt(0).toUpperCase()+base.slice(1);
+  return{cls:cls,txt:txt};
 }
 
 /* ── Color helper for correlation class ── */

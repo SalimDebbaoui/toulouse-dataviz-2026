@@ -35,6 +35,7 @@ function initHeroRadarAnim(){
   var section=document.getElementById('heroNew');
   if(!section) return;
   var h1=section.querySelector('.hero-radar-h1');
+  var subtitle=section.querySelector('.hero-radar-subtitle');
   var scope=section.querySelector('.scope');
   var sub=section.querySelector('.hero-radar-sub');
   var cue=section.querySelector('.scroll-cue');
@@ -44,17 +45,23 @@ function initHeroRadarAnim(){
       h1.style.opacity='1';h1.style.transform='none';
     },200);
   }
+  if(subtitle){
+    setTimeout(function(){
+      subtitle.style.transition='opacity .6s var(--ease), transform .6s var(--ease)';
+      subtitle.style.opacity='1';subtitle.style.transform='none';
+    },500);
+  }
   if(scope){
     setTimeout(function(){
       scope.style.transition='opacity .6s var(--ease), transform .6s var(--ease)';
       scope.style.opacity='1';scope.style.transform='none';
-    },600);
+    },700);
   }
   if(sub){
     setTimeout(function(){
       sub.style.transition='opacity .6s var(--ease), transform .6s var(--ease)';
       sub.style.opacity='1';sub.style.transform='none';
-    },900);
+    },1000);
   }
   if(cue){
     setTimeout(function(){
