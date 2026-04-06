@@ -78,6 +78,13 @@ function initHeroTabs(){
       var sidebarCategory=document.getElementById('heroSidebarCategory');
       if(sidebarProfil) sidebarProfil.style.display=(view==='profil')?'':'none';
       if(sidebarCategory) sidebarCategory.style.display=(view==='category')?'':'none';
+      /* Update hint text based on active view */
+      var hint=document.getElementById('heroRadarHint');
+      if(hint){
+        if(view==='profil') hint.textContent='Cliquez sur un domaine pour explorer les dépenses et indicateurs associés.';
+        else if(view==='category') hint.textContent='Cliquez sur un pays pour explorer les dépenses et indicateurs associés.';
+        else if(view==='overview') hint.textContent='Cliquez sur une cellule pour explorer les dépenses et indicateurs associés.';
+      }
       if(view==='overview') renderHeroHeatmap();       // heroHeatmap.js
       if(view==='category') renderHeroCategoryView();  // heroCategoryView.js
     });

@@ -39,7 +39,7 @@
     <h1 class="hero-radar-h1">Zone euro : comparer<br>l'<span style="color:#fb923c">effort en dépenses publiques</span> au <span style="color:var(--green)">bien-être citoyen</span></h1>
     <p class="hero-radar-subtitle">Effort&nbsp;: dépenses publiques (COFOG) en % du PIB · Bien-être&nbsp;: Z-Score d'indicateurs OCDE</p>
     <div class="scope"><span>14 pays · zone euro · 20 ans : 2004–2023 · 9 domaines · OCDE & Eurostat</span></div>
-    <p class="hero-radar-hint"><span class="hint-icon">👆</span> Cliquez sur un domaine pour explorer les dépenses et indicateurs associés.</p>
+    <p class="hero-radar-hint" id="heroRadarHint">Cliquez sur un domaine pour explorer les dépenses et indicateurs associés.</p>
   </div>
 
   <!-- Onglets principaux : Profil pays / Vue par catégorie / Vue générale -->
@@ -88,10 +88,7 @@
         <div class="hero-radar-slope-wrap">
           <div class="hero-radar-slope-title">Rang composite <span class="composite-info-icon" title="Les indicateurs composites somment uniformément les 9 domaines. Le bien être composite est hautement corrélé positivement à la satisfaction à l'égard de la vie (ρ = 0,93 Spearman ; r = 0,88 Pearson).">ⓘ</span></div>
           <svg id="heroSlopeChart" viewBox="0 0 230 380" preserveAspectRatio="xMidYMid meet"></svg>
-          <div class="hero-slope-legend">
-            <span><span class="dot" style="background:var(--green)"></span> Surperf.</span>
-            <span><span class="dot" style="background:var(--red)"></span> Sous-perf.</span>
-          </div>
+
         </div>
       </div>
 
@@ -121,7 +118,7 @@
     </div>
   </div>
 
-  <div class="scroll-cue"><span>Défiler</span><div class="line"></div></div>
+
 </section>
 
 <!-- ═══════════ SECTION INVITATION ANALYSE GUIDÉE ═══════════ -->
